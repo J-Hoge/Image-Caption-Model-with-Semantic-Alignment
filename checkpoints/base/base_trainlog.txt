@@ -1,0 +1,120 @@
+Epoch 0 - Average training loss: 3.458264277349064
+Epoch 0 - Average validation loss: 3.766988183303141
+Saving model - improved train loss: 3.458264277349064, val loss: 3.766988183303141
+Epoch 1 - Average training loss: 2.780907520555764
+Epoch 1 - Average validation loss: 3.7974635600243065
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 2 - Average training loss: 2.692743896948113
+Epoch 2 - Average validation loss: 3.869511481430201
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 3 - Average training loss: 2.635491605447583
+Epoch 3 - Average validation loss: 3.9189647917954518
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 4 - Average training loss: 2.5876896541252195
+Epoch 4 - Average validation loss: 3.9759962386799783
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 5 - Average training loss: 2.544173161291906
+Epoch 5 - Average validation loss: 4.066283530503466
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 6 - Average training loss: 2.5039905350677074
+Epoch 6 - Average validation loss: 4.1260261371513725
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 7 - Average training loss: 2.4675581741972503
+Epoch 7 - Average validation loss: 4.1729456531045495
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 8 - Average training loss: 2.433806301478362
+Epoch 8 - Average validation loss: 4.229049835405619
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 9 - Average training loss: 2.4032022949939114
+Epoch 9 - Average validation loss: 4.294986062344576
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 10 - Average training loss: 2.3747955110716195
+Epoch 10 - Average validation loss: 4.3259853616725
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 11 - Average training loss: 2.3488080982725625
+Epoch 11 - Average validation loss: 4.377492371590635
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 12 - Average training loss: 2.324697787282582
+Epoch 12 - Average validation loss: 4.434529688048155
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 13 - Average training loss: 2.301526543848086
+Epoch 13 - Average validation loss: 4.471062495209591
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 14 - Average training loss: 2.280408617997876
+Epoch 14 - Average validation loss: 4.494728163410131
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 15 - Average training loss: 2.2609774887677836
+Epoch 15 - Average validation loss: 4.499724700485782
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 16 - Average training loss: 2.2421245485731154
+Epoch 16 - Average validation loss: 4.564713866664722
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 17 - Average training loss: 2.2245289983105767
+Epoch 17 - Average validation loss: 4.622003816687118
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 18 - Average training loss: 2.208241063074041
+Epoch 18 - Average validation loss: 4.595263896747546
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 19 - Average training loss: 2.192420495244917
+Epoch 19 - Average validation loss: 4.656949964160207
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 20 - Average training loss: 2.1773919296192448
+Epoch 20 - Average validation loss: 4.678229433346244
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 21 - Average training loss: 2.1636089478223943
+Epoch 21 - Average validation loss: 4.696189098719585
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 22 - Average training loss: 2.150503050061291
+Epoch 22 - Average validation loss: 4.7742866113277955
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 23 - Average training loss: 2.137401762344918
+Epoch 23 - Average validation loss: 4.785534223530745
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 24 - Average training loss: 2.1251784245637286
+Epoch 24 - Average validation loss: 4.8098953666757165
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 25 - Average training loss: 2.1137449769212546
+Epoch 25 - Average validation loss: 4.8374565721101455
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 26 - Average training loss: 2.1029025024081522
+Epoch 26 - Average validation loss: 4.890293594095607
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 27 - Average training loss: 2.0926837938419287
+Epoch 27 - Average validation loss: 4.88146601118248
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 28 - Average training loss: 2.082886853672946
+Epoch 28 - Average validation loss: 4.89372827090395
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 29 - Average training loss: 2.0730270393839034
+Epoch 29 - Average validation loss: 4.947985463208353
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 30 - Average training loss: 2.0642508274802855
+Epoch 30 - Average validation loss: 4.952857321759556
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 31 - Average training loss: 2.0559324986641214
+Epoch 31 - Average validation loss: 4.987951436069093
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 32 - Average training loss: 2.0481076061841654
+Epoch 32 - Average validation loss: 4.9960509901701755
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 33 - Average training loss: 2.040905924501446
+Epoch 33 - Average validation loss: 5.032375511986237
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 34 - Average training loss: 2.0339590476855247
+Epoch 34 - Average validation loss: 5.0377516597068555
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 35 - Average training loss: 2.0275206786328366
+Epoch 35 - Average validation loss: 5.066645911093133
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 36 - Average training loss: 2.0223106101506616
+Epoch 36 - Average validation loss: 5.067209736929339
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 37 - Average training loss: 2.01654985197019
+Epoch 37 - Average validation loss: 5.094710596099388
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 38 - Average training loss: 2.0117390435829634
+Epoch 38 - Average validation loss: 5.113416639841784
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
+Epoch 39 - Average training loss: 2.008004726745751
+Epoch 39 - Average validation loss: 5.116157101300005
+Not saving model - best train loss: 3.458264277349064, best val loss: 3.766988183303141
