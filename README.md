@@ -27,7 +27,7 @@
 **Image-Caption-Model-with-Semantic-Alignment** is an advanced image captioning system that leverages three novel semantic alignment techniques to bridge the gap between visual features and natural language generation. Built on top of CLIP vision encoders and GPT-2 language models, this project introduces innovative approaches to enhance cross-modal understanding and generate more accurate, contextually relevant image descriptions.
 
 The model achieves state-of-the-art performance on COCO and NoCaps benchmarks through its unique combination of semantic enhancement, query-based bridging, and parameter-efficient adaptation mechanisms.
-# 架构图
+![](./pic/清晰.png)
 ### Key Contributions
 - **SEVE**: Enhances visual feature representation for better semantic alignment
 - **QSB**: Introduces learnable query tokens for improved vision-language fusion
@@ -142,13 +142,13 @@ LoraConfig( r=8, # LoRA rank lora_alpha=32, # Scaling factor target_modules=["q_
 
 ### Step-by-Step Setup
 
-1. **Clone the repository:*
+1. **Clone the repository:**
 
 ```bash
 git clone https://github.com/yourusername/Image-Caption-Model-with-Semantic-Alignment.git
 cd Image-Caption-Model-with-Semantic-Alignment
 ```
-2.**Create conda environment:**
+2. **Create conda environment:**
 ```
 conda create -n imgcap python=3.9
 conda activate imgcap
@@ -241,8 +241,9 @@ python testscore.py --gt_file ../data/annotations/captions_val2017.json --pred_f
 ```
 
 ## Results
-
-# 图片
+![](./pic/result.png)
+![](./pic/three_loss.png)
+All model's loss can be found in folder pic.
 
 
 ## Citation
