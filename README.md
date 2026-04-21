@@ -16,7 +16,6 @@
   - [Combined Training (SEVE + QSB + DLA)](#combined-training-seve--qsb--dla)
 - [Inference](#inference)
 - [Evaluation](#evaluation)
-- [Pre-trained Models](#pre-trained-models)
 - [Results](#results)
 - [Citation](#citation)
 - [License](#license)
@@ -28,13 +27,12 @@
 **Image-Caption-Model-with-Semantic-Alignment** is an advanced image captioning system that leverages three novel semantic alignment techniques to bridge the gap between visual features and natural language generation. Built on top of CLIP vision encoders and GPT-2 language models, this project introduces innovative approaches to enhance cross-modal understanding and generate more accurate, contextually relevant image descriptions.
 
 The model achieves state-of-the-art performance on COCO and NoCaps benchmarks through its unique combination of semantic enhancement, query-based bridging, and parameter-efficient adaptation mechanisms.
-
+# 架构图
 ### Key Contributions
 - **SEVE**: Enhances visual feature representation for better semantic alignment
 - **QSB**: Introduces learnable query tokens for improved vision-language fusion
 - **DLA**: Enables efficient fine-tuning through dynamic low-rank adaptation
 
----
 
 ## Key Features
 
@@ -188,6 +186,90 @@ python clip_qf_train.py --data ./data/oscar_split_ViT-B_16_train.pkl --mapping_t
 ### Training with QSB
 
 Enable QSB by using the `clip_qf_train.py` script:
+```
+python clip_qf_train.py  --data ./data/oscar_split_vit_base_patch16_train.pkl --valdata ./data/oscar_split_vit_base_patch16_val.pkl --epochs 40 --output_prefix qf --output_dir ./checkpoints/qf --bs 128 --prefix_length 32 --use_qformer --freeze_qformer
+```
+**QSB-specific Parameters:**
+- `--use_qformer`: Enable QSB module
+- `--freeze_qformer`: Freeze QSB parameters during training
+- `--prefix_length 32`: QSB outputs 32 query tokens
+
+### Training with DLA
+
+```
+python clip_qf_train.py  --data ./data/oscar_split_vit_base_patch16_train.pkl --num_layers 12 --valdata ./data/oscar_split_vit_base_patch16_val.pkl --epochs 40 --output_prefix ve --output_dir ./checkpoints/ve --bs 160 --prefix_length 32 --use_lora --clip_length 40
+```
+**DLA-specific Parameters:**
+- `--use_lora`: Enable LoRA adaptation
+- LoRA configuration is hardcoded in `clip_qf_train.py`:
+  - `r=8`, `lora_alpha=32`, `lora_dropout=0.1`
+
+
+### Combined Training (SEVE + QSB + DLA)
+
+Train the full model with all three techniques:
+```
+python clip_qf_train.py  --data ./data/oscar_split_ViT-B_16_train.pkl --valdata ./data/oscar_split_ViT-B_16_val.pkl  --epochs 40 --output_prefix clip_qf_ve --output_dir ./checkpoints/clip_qf_ve --bs 128 --prefix_length 32 --use_lora --use_qformer --freeze_qformer --seed 64
+```
+## Inference
+
+### Single Image Captioning
+
+Generate caption for a single image:
+```
+python predict_ve.py --run_model run_val --model_path ./checkpoints/clip_qf_ve/clip_qf_ve_best.pt --output_prefix clipqfve --prefix_length 32 --mapping_network none --dataval ./data/oscar_split_ViT-B_16_val.pkl --beam_size 5 --use_lora --use_qformer --freeze_qformer
+```
+
+## Evaluation
+
+### Automatic Metrics
+
+The project uses the official COCO evaluation toolkit to compute:
+
+- **BLEU-1, BLEU-2, BLEU-3, BLEU-4**: N-gram precision metrics
+- **METEOR**: Harmonic mean of precision and recall with stemming
+- **ROUGE-L**: Longest common subsequence metric
+- **CIDEr**: Consensus-based image description evaluation
+- **SPICE**: Semantic propositional image-caption evaluation
+
+### Custom Evaluation Script
+
+```
+cd out_score
+python testscore.py --gt_file ../data/annotations/captions_val2017.json --pred_file ../data/val_out/your_predictions.json
+
+```
+
+## Results
+
+# 图片
+
+
+## Citation
+If you use this work in your research, please cite:
+```bibtex
+@article{semantic_alignment_captioning, title={Image Captioning with Semantic Alignment: SEVE, QSB, and DLA}, author={Your Name}, journal={arXiv preprint}, year={2026} }
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgments
+
+- **CLIP**: OpenAI's Contrastive Language-Image Pre-training
+- **GPT-2**: OpenAI's Generative Pre-trained Transformer 2
+- **BLIP-2**: Salesforce's Bootstrapping Language-Image Pre-training
+- **Hugging Face Transformers**: For the excellent transformer library
+- **COCO Dataset**: Microsoft Common Objects in Context
+- **NoCaps Dataset**: For zero-shot evaluation benchmark
+
+---
+
+**Last Updated**: April 2026
+
 
 
 
