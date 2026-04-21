@@ -241,6 +241,7 @@ python testscore.py --gt_file ../data/annotations/captions_val2017.json --pred_f
 ```
 
 ## Results
+Result on MSCOCO7_val
 ![](./pic/result.png)
 ![](./pic/three_loss.png)
 All model's loss can be found in folder pic.
