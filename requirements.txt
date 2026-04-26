@@ -1,0 +1,41 @@
+# Core PyTorch and CUDA
+torch>=1.9.0
+torchvision>=0.10.0
+
+# CLIP
+git+https://github.com/openai/CLIP.git
+
+# Transformers and NLP
+transformers>=4.10.2
+tokenizers>=0.10.3
+ftfy>=6.0.0
+regex>=2021.8.3
+
+# PEFT for LoRA
+peft>=0.5.0
+
+# Image Processing
+Pillow>=8.0.0
+scikit-image>=0.18.1
+clip>=1.0
+
+# Data Processing
+datasets>=2.0.0
+numpy>=1.21.0
+pandas>=1.3.0
+
+# COCO Evaluation
+pycocotools>=2.0.2
+pycocoevalcap>=1.2
+
+# Utilities
+tqdm>=4.62.0
+requests>=2.26.0
+argparse>=1.4.0
+
+# Visualization (optional)
+matplotlib>=3.4.0
+seaborn>=0.11.0
+
+# Development tools (optional)
+pytest>=6.2.0

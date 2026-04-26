@@ -596,7 +596,7 @@ def train_flickr(dataset: ClipCocoDataset, model: ClipCaptionModelQFVE, args,
             lr: float = 2e-5, warmup_steps: int = 5000):
     output_dir = args.output_dir
     output_prefix = args.output_prefix
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    set_seed(args.seed)
     device = get_device()
     print(device)
     log_file_path = os.path.join(output_dir, f"{output_prefix}_trainlog.txt")
@@ -614,42 +614,18 @@ def train_flickr(dataset: ClipCocoDataset, model: ClipCaptionModelQFVE, args,
     print(f"Total trainable parameters: {total_trainable:,}")
     optimizer = optim.AdamW(trainable_params, lr=lr)
 
-    torch.manual_seed(42)
+    from torch.utils.data import Subset
+    subset_indices = list(range(min(150000, len(dataset))))
+    subset_dataset = Subset(dataset, subset_indices)
+    print(f"Using {len(subset_dataset)} samples for training (first 30000 images)")
 
-    # 计算划分大小
-    dataset_size = len(dataset)
-    train_size = int(0.9 * dataset_size)
-    val_size = dataset_size - train_size  # 确保全部数据被使用
-
-    # 划分数据集
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
-
-    # 创建 DataLoader
-    train_dataloader = DataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        shuffle=True,  # 训练集需要打乱
-        drop_last=True,  # 训练集可以丢弃最后不完整批次
-        num_workers=4,
-        pin_memory=True
-    )
-
-    val_dataloader = DataLoader(
-        val_dataset,
-        batch_size=batch_size,
-        shuffle=False,  # 验证集不需要打乱
-        drop_last=False,  # 验证集保留所有数据
-        num_workers=4,
-        pin_memory=True
-    )
+    train_dataloader = DataLoader(subset_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
 
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=warmup_steps, num_training_steps=epochs * len(train_dataloader)
     )
 
     best_train_loss = float('inf')
-    best_val_loss = float('inf')
-    # save_config(args)
     for epoch in range(epochs):
         print(f">>> Training epoch {epoch}")
         sys.stdout.flush()
@@ -665,84 +641,41 @@ def train_flickr(dataset: ClipCocoDataset, model: ClipCaptionModelQFVE, args,
             outputs = model(tokens, prefix, mask)
 
             with torch.no_grad():
-                prefix_proj_test = model.clip_project(prefix[:1])  # 测试单个样本
-                actual_prefix_length = prefix_proj_test.shape[1]  # 应该是 32
+                prefix_proj_test = model.clip_project(prefix[:1])
+                actual_prefix_length = prefix_proj_test.shape[1]
 
             logits = outputs.logits[:, actual_prefix_length - 1: -1]
-            # logits = outputs.logits[:, dataset.prefix_length - 1: -1]
             loss = nnf.cross_entropy(logits.reshape(-1, logits.shape[-1]), tokens.flatten(), ignore_index=0)
             loss.backward()
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad()
 
-            # 累积训练损失
             batch_size_actual = tokens.size(0)
             total_train_loss += loss.item() * batch_size_actual
             train_samples += batch_size_actual
 
             progress.set_postfix({"loss": loss.item()})
             progress.update()
-            # if (idx + 1) % 10000 == 0:
-            #     torch.save(
-            #         model.state_dict(),
-            #         os.path.join(output_dir, f"{output_prefix}_latest.p t"),
-            #     )
         progress.close()
 
-        # 计算平均训练损失
         avg_train_loss = total_train_loss / train_samples
         print(f"Epoch {epoch} - Average training loss: {avg_train_loss}")
         print(f"Epoch {epoch} - Average training loss: {avg_train_loss}", file=log_file)
         log_file.flush()
-        ##################################################################
 
-        model.eval()
-
-        total_val_loss = 0.0
-        total_samples = 0
-        with torch.no_grad():  # 禁用梯度计算
-            val_progress = tqdm(total=len(val_dataloader), desc=f"Validation {output_prefix}")
-            for idx, (tokens, mask, prefix) in enumerate(val_dataloader):
-                tokens, mask, prefix = tokens.to(device), mask.to(device), prefix.to(device, dtype=torch.float32)
-                outputs = model(tokens, prefix, mask)
-
-                with torch.no_grad():
-                    prefix_proj_test = model.clip_project(prefix[:1])
-                    actual_prefix_length = prefix_proj_test.shape[1]
-
-                logits = outputs.logits[:, actual_prefix_length - 1: -1]
-                #logits = outputs.logits[:, dataset.prefix_length - 1: -1]
-                loss = nnf.cross_entropy(logits.reshape(-1, logits.shape[-1]), tokens.flatten(), ignore_index=0)
-
-                batch_size_actual = tokens.size(0)
-                total_val_loss += loss.item() * batch_size_actual
-                total_samples += batch_size_actual
-
-                val_progress.set_postfix({"val_loss": loss.item()})
-                val_progress.update()
-            val_progress.close()
-
-        avg_val_loss = total_val_loss / total_samples
-        print(f"Epoch {epoch} - Average validation loss: {avg_val_loss}")
-        print(f"Epoch {epoch} - Average validation loss: {avg_val_loss}", file=log_file)
-        log_file.flush()
-        #####################################################################
-        # 只有当训练损失和验证损失都降低时才保存模型
-        if avg_train_loss < best_train_loss and avg_val_loss < best_val_loss:
+        if avg_train_loss < best_train_loss:
             best_train_loss = avg_train_loss
-            best_val_loss = avg_val_loss
-            print(f"Saving model - improved train loss: {avg_train_loss}, val loss: {avg_val_loss}")
-            print(f"Saving model - improved train loss: {avg_train_loss}, val loss: {avg_val_loss}", file=log_file)
+            print(f"Saving model - improved train loss: {avg_train_loss}")
+            print(f"Saving model - improved train loss: {avg_train_loss}", file=log_file)
             log_file.flush()
             torch.save(
                 model.state_dict(),
                 os.path.join(output_dir, f"{output_prefix}_best.pt"),
             )
         else:
-            print(f"Not saving model - best train loss: {best_train_loss}, best val loss: {best_val_loss}")
-            print(f"Not saving model - best train loss: {best_train_loss}, best val loss: {best_val_loss}",
-                  file=log_file)
+            print(f"Not saving model - best train loss: {best_train_loss}")
+            print(f"Not saving model - best train loss: {best_train_loss}", file=log_file)
             log_file.flush()
 
         if epoch == epochs - 1:
@@ -752,7 +685,6 @@ def train_flickr(dataset: ClipCocoDataset, model: ClipCaptionModelQFVE, args,
             )
     log_file.close()
     return model
-
 
 
 def main():

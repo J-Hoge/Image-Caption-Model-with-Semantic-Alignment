@@ -1181,22 +1181,8 @@ def run_flkval(args):
     output_dir = "./data/val_out"
     dataset = ClipCocoDataset(args.dataval, prefix_length=args.prefix_length, normalize_prefix=False)
 
-    # 计算划分大小
-    seen_ids = set()
-    unique_indices = []
-    for idx in range(len(dataset)):
-        img_id = dataset.image_ids[idx]
-        if img_id not in seen_ids:
-            seen_ids.add(img_id)
-            unique_indices.append(idx)
-
-    # 使用 Subset 包装器只保留不重复的索引
-    from torch.utils.data import Subset
-    dataset = Subset(dataset, unique_indices)
-
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    # clip_model, preprocess = clip.load("RN50x4", device=device, jit=False)
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 
     prefix_length = args.prefix_length
@@ -1219,86 +1205,81 @@ def run_flkval(args):
     model.to(device)
     model.eval()
 
-    torch.manual_seed(42)
-    dataset_size = len(dataset)
-    train_size = int(0.9 * dataset_size)
-    val_size = dataset_size - train_size  # 确保全部数据被使用
+    start_idx = args.start_idx
 
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
-    # val_dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False, drop_last=False)
-    val_dataloader = DataLoader(
-        val_dataset,
-        batch_size=args.batch_size,
-        shuffle=False,  # 验证集不需要打乱
-        drop_last=False,  # 验证集保留所有数据
-        num_workers=4,
-        pin_memory=True
-    )
-    total_loss = 0.0
-    total_samples = 0
-    with torch.no_grad():  # 禁用梯度计算
-        progress = tqdm(total=len(val_dataloader), desc=f"Validation {args.output_prefix}")
-        generated_captions = []
-        for idx, (tokens, mask, prefix) in enumerate(val_dataloader):
-            tokens, mask, prefix = tokens.to(device), mask.to(device), prefix.to(device, dtype=torch.float32)
-            # 前向传播
-            outputs = model(tokens, prefix, mask)
-            if args.mapping_network == 'transformer':
-                with torch.no_grad():
-                    prefix_proj_test = model.clip_project(prefix[:1])
-                    actual_prefix_length = prefix_proj_test.shape[1]
-            else:
-                actual_prefix_length = dataset.prefix_length
+    with open(args.dataval, 'rb') as f:
+        data = pickle.load(f)
 
-            logits = outputs.logits[:, actual_prefix_length - 1: -1]
-            loss = nnf.cross_entropy(logits.reshape(-1, logits.shape[-1]), tokens.flatten(), ignore_index=0)
+    all_clip_embeddings = data["clip_embedding"]
+    all_captions_data = data["captions"]
 
-            # 累积损失
-            batch_size_actual = tokens.size(0)
-            total_loss += loss.item() * batch_size_actual
-            total_samples += batch_size_actual
+    print(f"Total captions in dataset: {len(all_captions_data)}")
+    print(f"Starting from caption index: {start_idx}")
 
-            prefix_embed = model.clip_project(prefix).reshape(prefix.size(0), actual_prefix_length, -1)
+    processed_image_ids = set()
+    selected_indices = []
 
-            # 为批次中的每个样本生成文本
-            for i in range(prefix.size(0)):
-                single_prefix_embed = prefix_embed[i:i + 1]  # 取单个样本
+    for idx in range(start_idx*5, len(all_captions_data)):
+        caption_item = all_captions_data[idx]
+        clip_emb_idx = caption_item["clip_embedding"]
+        img_id = caption_item["image_id"]
+
+        if img_id not in processed_image_ids:
+            processed_image_ids.add(img_id)
+            selected_indices.append((idx, clip_emb_idx, img_id))
+
+    print(f"Found {len(selected_indices)} unique images starting from caption {start_idx}")
+
+    os.makedirs(output_dir, exist_ok=True)
+    generated_captions = []
+
+    with torch.no_grad():
+        progress = tqdm(total=len(selected_indices), desc=f"Generating captions from index {start_idx}")
+
+        for data_idx, clip_emb_idx, img_id in selected_indices:
+            try:
+                prefix = all_clip_embeddings[clip_emb_idx:clip_emb_idx+1].to(device, dtype=torch.float32)
+
+                prefix_embed = model.clip_project(prefix)
+
+                if hasattr(model, 'qformer_proj') or prefix_embed.size(-1) != model.gpt_embedding_size:
+                    if not hasattr(model, 'qformer_proj'):
+                        model.qformer_proj = torch.nn.Linear(prefix_embed.size(-1), model.gpt_embedding_size).to(device)
+                    prefix_embed = model.qformer_proj(prefix_embed)
+
                 generated_text = generate_beam_for_cider(
-                    model, tokenizer, embed=single_prefix_embed,
+                    model, tokenizer, embed=prefix_embed,
                     beam_size=args.beam_size,
                     max_length=20,
-                    min_length=5,
+                    min_length=8,
                     temperature=1.0,
                     length_penalty=0.0,
+                    repetition_penalty=1.0,
                     no_repeat_ngram_size=2,
-                    repetition_penalty=1,
+                    diversity_penalty=0,
                     ban_special_chars=True,
                 )
-                original_dataset = dataset.dataset if hasattr(dataset, 'dataset') else dataset
-                global_idx = unique_indices[idx * val_dataloader.batch_size + i]
 
                 generated_captions.append({
-                    'image_id': original_dataset.image_ids[global_idx],
+                    'image_id': int(img_id),
                     'caption': generated_text
                 })
-                # generated_captions.append({
-                #     'image_id': dataset.image_ids[idx * val_dataloader.batch_size + i],
-                #     'caption': generated_text
-                # })
-                print(generated_text)
 
-            progress.set_postfix({"val_loss": loss.item()})
+                print(f"Image {img_id}: {generated_text}")
+
+            except Exception as e:
+                print(f"\nError processing image {img_id} (caption idx {data_idx}): {str(e)}")
+
             progress.update()
 
-        captions_file = os.path.join(output_dir, f"{args.output_prefix}_val.json")
-        with open(captions_file, 'w', encoding='utf-8') as f:
-            json.dump(generated_captions, f, ensure_ascii=False, indent=2)
         progress.close()
-        # 计算平均损失
-    avg_loss = total_loss / total_samples
-    print(f"Validation completed. Average loss: {avg_loss}")
-    return avg_loss
 
+    captions_file = os.path.join(output_dir, f"{args.output_prefix}_from_{start_idx}.json")
+    with open(captions_file, 'w', encoding='utf-8') as f:
+        json.dump(generated_captions, f, ensure_ascii=False, indent=2)
+
+    print(f"\nSuccessfully generated captions for {len(generated_captions)} images")
+    print(f"Results saved to: {captions_file}")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -1325,6 +1306,7 @@ if __name__ == '__main__':
     parser.add_argument('--usebeamsearch', action='store_true')
     parser.add_argument('--json_file', type=str, help='Path to JSON file containing image URLs')
     parser.add_argument('--flickr_val', action='store_true')
+    parser.add_argument('--start_idx', type=int, default=27000)
     args = parser.parse_args()
 
     modeltype = args.model_type
